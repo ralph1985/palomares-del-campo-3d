@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0c1726" />
+    <title>Palomares del Campo · Visor 3D</title>
+  </head>
+  <body>
+    <div id="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Cuenca · Castilla-La Mancha</p>
+          <h1>Palomares del Campo <span>3D</span></h1>
+        </div>
+        <div id="data-status" class="status" aria-live="polite">Cargando datos…</div>
+      </header>
+
+      <main class="workspace">
+        <section id="cesiumContainer" aria-label="Mapa 3D de Palomares del Campo"></section>
+        <aside class="panel" aria-label="Controles del visor">
+          <div class="panel-section intro">
+            <p class="section-kicker">Explora el pueblo</p>
+            <p class="muted">Base cartográfica construida con datos de OpenStreetMap y edificios extruidos.</p>
+          </div>
+
+          <div class="panel-section">
+            <h2>Capas</h2>
+            <label class="toggle"><input id="toggle-buildings" type="checkbox" checked /> <span>Edificios</span></label>
+            <label class="toggle"><input id="toggle-roads" type="checkbox" checked /> <span>Calles y caminos</span></label>
+            <label class="toggle"><input id="toggle-landuse" type="checkbox" checked /> <span>Usos del suelo</span></label>
+            <label class="toggle"><input id="toggle-places" type="checkbox" checked /> <span>Lugares y etiquetas</span></label>
+          </div>
+
+          <div class="panel-section selected-section">
+            <h2>Elemento seleccionado</h2>
+            <div id="selected-content" class="selected-content muted">Haz clic en un edificio, calle o lugar.</div>
+          </div>
+
+          <div class="panel-section stats-section">
+            <h2>Datos cargados</h2>
+            <dl id="stats" class="stats"><dt>Entidades</dt><dd>—</dd></dl>
+          </div>
+
+          <div class="panel-footer">
+            <button id="home-button" class="action-button" type="button">Volver al pueblo</button>
+            <p>Datos © OpenStreetMap contributors · ODbL</p>
+          </div>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

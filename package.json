@@ -1,0 +1,20 @@
+{
+  "name": "palomares-del-campo-3d",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "data:build": "python3 scripts/osm_to_geojson.py",
+    "dev": "npm run data:build && vite",
+    "build": "npm run data:build && tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "cesium": "^1.145.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "typescript": "^5.9.2",
+    "vite": "^7.1.3"
+  }
+}

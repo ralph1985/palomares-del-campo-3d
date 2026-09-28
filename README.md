@@ -9,6 +9,8 @@ Visor 3D navegable de Palomares del Campo (Cuenca), construido con CesiumJS y un
 - Alturas tomadas de `height` o `building:levels` cuando existen; en el resto se usa una estimación de 6 metros.
 - Calles, caminos, usos del suelo y lugares con nombre.
 - Controles de visibilidad por capa.
+- Capa independiente de agua.
+- Buscador tolerante a mayúsculas y acentos para calles y lugares con nombre.
 - Selección de entidades con información básica.
 - Mapa base de OpenStreetMap sin necesidad de token.
 - Soporte opcional para Cesium World Terrain mediante `VITE_CESIUM_ION_TOKEN`.
@@ -31,6 +33,12 @@ npm run build
 npm run preview
 ```
 
+Las pruebas unitarias del buscador se ejecutan con:
+
+```bash
+npm test
+```
+
 ## Terreno mundial opcional
 
 Copia `.env.example` como `.env.local` y añade un token de Cesium ion. Si no se configura, la aplicación usa un elipsoide terrestre y sigue siendo completamente navegable.
@@ -39,4 +47,4 @@ Copia `.env.example` como `.env.local` y añade un token de Cesium ion. Si no se
 
 La base de datos procede de OpenStreetMap. La aplicación mantiene la atribución visible a OpenStreetMap contributors. Consulta la ODbL antes de redistribuir una base derivada o desplegarla con datos adicionales.
 
-Esta primera versión es una base cartográfica volumétrica. No incluye fachadas, texturas, interiores ni fotogrametría. Esos elementos se pueden incorporar posteriormente como modelos glTF/GLB o 3D Tiles.
+La aplicación es una base cartográfica volumétrica. No incluye fachadas, texturas, interiores ni fotogrametría. Esos elementos se pueden incorporar posteriormente como modelos glTF/GLB o 3D Tiles.

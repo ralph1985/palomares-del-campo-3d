@@ -1,12 +1,13 @@
 import * as Cesium from "cesium";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import "./style.css";
+import { searchEntities, type SearchEntry } from "./search";
 
 const HOME = Cesium.Rectangle.fromDegrees(-2.615, 39.93, -2.58, 39.96);
 const CENTER = Cesium.Cartesian3.fromDegrees(-2.598374, 39.945842, 5000);
 const DATA_URL = "/data/palomares.geojson";
 
-type Layer = "building" | "road" | "landuse" | "place";
+type Layer = "building" | "road" | "landuse" | "place" | "water";
 
 type FeatureProperties = {
   category?: string;
@@ -20,6 +21,8 @@ type FeatureProperties = {
   amenity?: string;
   tourism?: string;
   place?: string;
+  historic?: string;
+  waterway?: string;
 };
 
 function getProperties(entity: Cesium.Entity): FeatureProperties {
@@ -37,6 +40,8 @@ function categoryLabel(properties: FeatureProperties): string {
       return "Zona";
     case "place":
       return "Lugar";
+    case "water":
+      return "Agua";
     default:
       return "Elemento";
   }
@@ -102,6 +107,13 @@ function styleEntities(dataSource: Cesium.GeoJsonDataSource): void {
         color: Cesium.Color.fromCssColorString(color).withAlpha(0.95),
       });
       entity.polyline.clampToGround = new Cesium.ConstantProperty(true);
+    } else if (category === "water" && entity.polyline) {
+      entity.polyline.width = new Cesium.ConstantProperty(3);
+      entity.polyline.material = new Cesium.PolylineGlowMaterialProperty({
+        glowPower: 0.05,
+        color: Cesium.Color.fromCssColorString("#63b3ed").withAlpha(0.9),
+      });
+      entity.polyline.clampToGround = new Cesium.ConstantProperty(true);
     } else if (category === "place" && entity.position) {
       entity.point = new Cesium.PointGraphics({
         pixelSize: 9,
@@ -125,9 +137,6 @@ function styleEntities(dataSource: Cesium.GeoJsonDataSource): void {
       }
     }
 
-    entity.description = new Cesium.ConstantProperty(
-      `<strong>${properties.name || categoryLabel(properties)}</strong>`,
-    );
     entity.show = true;
   }
 }
@@ -138,6 +147,7 @@ function setupLayerControls(viewer: Cesium.Viewer, dataSource: Cesium.GeoJsonDat
     ["toggle-roads", "road"],
     ["toggle-landuse", "landuse"],
     ["toggle-places", "place"],
+    ["toggle-water", "water"],
   ];
 
   for (const [id, layer] of controls) {
@@ -174,7 +184,12 @@ function setupSelection(viewer: Cesium.Viewer): void {
     if (properties.amenity) details.push(properties.amenity);
 
     content.className = "selected-content";
-    content.innerHTML = `<strong>${title}</strong><span>${details.join(" · ")}</span>`;
+    content.replaceChildren();
+    const titleElement = document.createElement("strong");
+    titleElement.textContent = title;
+    const detailElement = document.createElement("span");
+    detailElement.textContent = details.join(" · ");
+    content.append(titleElement, detailElement);
   });
 }
 
@@ -189,6 +204,76 @@ function updateStats(dataSource: Cesium.GeoJsonDataSource): void {
   stats.innerHTML = [...counts.entries()]
     .map(([label, count]) => `<dt>${label}</dt><dd>${count}</dd>`)
     .join("");
+}
+
+function searchLabel(properties: FeatureProperties): string {
+  if (properties.name) return properties.name;
+  if (properties.highway) return `Vía ${properties.highway}`;
+  if (properties.amenity) return properties.amenity;
+  if (properties.tourism) return properties.tourism;
+  return categoryLabel(properties);
+}
+
+function setupSearch(viewer: Cesium.Viewer, dataSource: Cesium.GeoJsonDataSource): void {
+  const input = document.getElementById("search-input") as HTMLInputElement | null;
+  const results = document.getElementById("search-results");
+  const hint = document.getElementById("search-hint");
+  const clearButton = document.getElementById("clear-search");
+  if (!input || !results || !hint) return;
+
+  const searchable = dataSource.entities.values
+    .map((entity) => {
+      const properties = getProperties(entity);
+      const label = searchLabel(properties);
+      const hasUsefulLabel = Boolean(properties.name || properties.amenity || properties.tourism);
+      if (!hasUsefulLabel) return null;
+      const entry: SearchEntry = {
+        id: String(entity.id),
+        label,
+        keywords: Object.values(properties).filter((value) => typeof value === "string").join(" "),
+      };
+      return { entry, entity };
+    })
+    .filter((value): value is { entry: SearchEntry; entity: Cesium.Entity } => value !== null);
+  const byId = new Map(searchable.map((value) => [value.entry.id, value.entity]));
+
+  const renderResults = (): void => {
+    const matches = searchEntities(
+      searchable.map((value) => value.entry),
+      input.value,
+    );
+    results.replaceChildren();
+    hint.textContent = input.value
+      ? `${matches.length} resultado${matches.length === 1 ? "" : "s"}`
+      : "Busca calles, edificios y lugares con nombre";
+    clearButton?.toggleAttribute("hidden", input.value.length === 0);
+
+    for (const match of matches) {
+      const entity = byId.get(match.id);
+      if (!entity) continue;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "search-result";
+      const label = document.createElement("strong");
+      label.textContent = match.label;
+      const meta = document.createElement("span");
+      meta.textContent = categoryLabel(getProperties(entity));
+      button.append(label, meta);
+      button.addEventListener("click", () => {
+        viewer.selectedEntity = entity;
+        void viewer.flyTo(entity, { duration: 0.8 });
+      });
+      results.append(button);
+    }
+  };
+
+  input.addEventListener("input", renderResults);
+  clearButton?.addEventListener("click", () => {
+    input.value = "";
+    input.focus();
+    renderResults();
+  });
+  renderResults();
 }
 
 async function init(): Promise<void> {
@@ -216,6 +301,7 @@ async function init(): Promise<void> {
     viewer.dataSources.add(dataSource);
     styleEntities(dataSource);
     setupLayerControls(viewer, dataSource);
+    setupSearch(viewer, dataSource);
     updateStats(dataSource);
     void viewer.camera.flyTo({ destination: HOME, duration: 1.1 });
     if (status) {

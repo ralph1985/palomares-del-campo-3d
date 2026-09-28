@@ -21,7 +21,17 @@
         <aside class="panel" aria-label="Controles del visor">
           <div class="panel-section intro">
             <p class="section-kicker">Explora el pueblo</p>
-            <p class="muted">Base cartográfica construida con datos de OpenStreetMap y edificios extruidos.</p>
+            <p class="muted">Base cartográfica de OpenStreetMap con edificios extruidos y lugares con nombre.</p>
+          </div>
+
+          <div class="panel-section search-section">
+            <label class="search-label" for="search-input">Buscar en el pueblo</label>
+            <div class="search-field">
+              <input id="search-input" type="search" placeholder="Iglesia, ayuntamiento…" autocomplete="off" />
+              <button id="clear-search" class="clear-search" type="button" aria-label="Limpiar búsqueda" hidden>×</button>
+            </div>
+            <p id="search-hint" class="search-hint">Busca calles, edificios y lugares con nombre</p>
+            <div id="search-results" class="search-results" aria-live="polite"></div>
           </div>
 
           <div class="panel-section">
@@ -30,6 +40,7 @@
             <label class="toggle"><input id="toggle-roads" type="checkbox" checked /> <span>Calles y caminos</span></label>
             <label class="toggle"><input id="toggle-landuse" type="checkbox" checked /> <span>Usos del suelo</span></label>
             <label class="toggle"><input id="toggle-places" type="checkbox" checked /> <span>Lugares y etiquetas</span></label>
+            <label class="toggle"><input id="toggle-water" type="checkbox" checked /> <span>Agua</span></label>
           </div>
 
           <div class="panel-section selected-section">
